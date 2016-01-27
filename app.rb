@@ -67,6 +67,9 @@ class Player
     @token = token
   end
 
+  def other_player(turn = token)
+    turn == 'x' ? 'o' : 'x'
+  end
 
   def move(board)
     print "#{token} > "
@@ -109,13 +112,42 @@ class OffensiveAI < Player
     foo[board.line(foo).index(EMPTY)]
   end
 
-  def other_player
-    token == 'x' ? 'o' : 'x'
-  end
-
   def near_win?(state, board, token)
     (board.line(state).count(token) == 2) &&
       board.line(state).include?(EMPTY)
+  end
+end
+
+class MinimaxAI < Player
+  def move(board)
+    board.allowable_moves.max_by do |cell|
+      new_board = board.place_token(cell, token)
+      minimax(new_board, token)
+    end
+  end
+
+  def minimax(board, just_played)
+    return final_score(board, just_played) if board.game_over?
+
+    scores = board.allowable_moves.map do |cell|
+      next_player = other_player(just_played)
+      new_board = board.place_token(cell, next_player)
+      minimax(new_board, next_player)
+    end
+
+    my_turn?(just_played) ? scores.min : scores.max
+  end
+
+  def final_score(board, just_played)
+    if board.win?
+      my_turn?(just_played) ? 1 : -1
+    else
+      0
+    end
+  end
+
+  def my_turn?(turn)
+    turn == token
   end
 end
 
@@ -137,7 +169,7 @@ def valid_move?(board, move)
 end
 
 results = Hash.new(0)
-players = [Player.new('x'), OffensiveAI.new('o')]
+players = [MinimaxAI.new('x'), OffensiveAI.new('o')]
 
 board = Board.new
 
