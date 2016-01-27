@@ -13,8 +13,8 @@ WIN_STATES = [
 class Board
   attr_reader :cells
 
-  def initialize
-    @cells = Array.new(9) { EMPTY }
+  def initialize(cells = Array.new(9) { EMPTY })
+    @cells = cells
   end
 
   def allowable_moves
@@ -24,7 +24,9 @@ class Board
   end
 
   def place_token(cell, token)
-    cells[cell] = token
+    new_cells = cells.dup
+    new_cells[cell] = token
+    self.class.new(new_cells)
   end
 
   def game_over?
@@ -146,7 +148,7 @@ winner = loop do
   move = player.move(board)
   next unless valid_move?(board, move)
 
-  board.place_token(move, player.token)
+  board = board.place_token(move, player.token)
   break player if board.game_over?
   players.rotate!
 end
