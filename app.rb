@@ -78,14 +78,12 @@ end
 
 class RandomAI < Player
   def move(board)
-    # sleep 1
     board.allowable_moves.sample
   end
 end
 
 class OffensiveAI < Player
   def move(board)
-    # sleep 1
     winning_move(board) || blocking_move(board) || board.allowable_moves.sample
   end
 
@@ -137,30 +135,22 @@ def valid_move?(board, move)
 end
 
 results = Hash.new(0)
-players = [OffensiveAI.new('x'), OffensiveAI.new('o')]
+players = [Player.new('x'), OffensiveAI.new('o')]
 
-10000.times do
-  board = Board.new
+board = Board.new
 
-  winner = loop do
-    # print_board board
-    player = players.first
+winner = loop do
+  print_board board
+  player = players.first
 
-    move = player.move(board)
-    next unless valid_move?(board, move)
+  move = player.move(board)
+  next unless valid_move?(board, move)
 
-    board.place_token(move, player.token)
-    break player if board.game_over?
-    players.rotate!
-  end
-
-  # print_board board
-  # puts 'Game OVER'
-  # declare_winner(board, winner)
-
-  if board.win?
-    results[winner.token] +=1
-  end
+  board.place_token(move, player.token)
+  break player if board.game_over?
+  players.rotate!
 end
 
-puts results
+print_board board
+puts 'Game OVER'
+declare_winner(board, winner)
